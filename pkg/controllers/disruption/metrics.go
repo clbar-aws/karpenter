@@ -108,4 +108,15 @@ var (
 		},
 		[]string{decisionLabel, metrics.ReasonLabel, ConsolidationTypeLabel},
 	)
+	CandidatesSortDurationSeconds = opmetrics.NewPrometheusHistogram(
+		crmetrics.Registry,
+		prometheus.HistogramOpts{
+			Namespace: metrics.Namespace,
+			Subsystem: voluntaryDisruptionSubsystem,
+			Name:      "candidates_sort_duration_seconds",
+			Help:      "Duration of candidate sorting in seconds. Labeled by consolidation type.",
+			Buckets:   metrics.DurationBuckets(),
+		},
+		[]string{ConsolidationTypeLabel},
+	)
 )

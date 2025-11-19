@@ -124,9 +124,13 @@ func (c *consolidation) ShouldDisrupt(_ context.Context, cn *Candidate) bool {
 }
 
 // sortCandidates sorts candidates by disruption cost (where the lowest disruption cost is first) and returns the result
-func (c *consolidation) sortCandidates(candidates []*Candidate) []*Candidate {
+func (c *consolidation) sortCandidates(candidates []*Candidate, consolidationType string) []*Candidate {
+	startTime := c.clock.Now()
 	sort.Slice(candidates, func(i int, j int) bool {
 		return candidates[i].DisruptionCost < candidates[j].DisruptionCost
+	})
+	CandidatesSortDurationSeconds.Observe(c.clock.Since(startTime).Seconds(), map[string]string{
+		ConsolidationTypeLabel: consolidationType,
 	})
 	return candidates
 }

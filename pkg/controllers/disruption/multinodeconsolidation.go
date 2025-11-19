@@ -52,7 +52,7 @@ func (m *MultiNodeConsolidation) ComputeCommands(ctx context.Context, disruption
 	if m.IsConsolidated() {
 		return []Command{}, nil
 	}
-	candidates = m.sortCandidates(candidates)
+	candidates = m.sortCandidates(candidates, MultiNodeConsolidationType)
 
 	// In order, filter out all candidates that would violate the budget.
 	// Since multi-node consolidation relies on the ordering of
