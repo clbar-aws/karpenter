@@ -235,9 +235,10 @@ func (q *Queue) waitOrTerminate(ctx context.Context, cmd *Command) (err error) {
 		}
 		q.recorder.Publish(disruptionevents.Terminating(cmd.Candidates[i].Node, cmd.Candidates[i].NodeClaim, string(cmd.Reason()))...)
 		metrics.NodeClaimsDisruptedTotal.Inc(map[string]string{
-			metrics.ReasonLabel:       pretty.ToSnakeCase(string(cmd.Reason())),
-			metrics.NodePoolLabel:     cmd.Candidates[i].NodeClaim.Labels[v1.NodePoolLabelKey],
-			metrics.CapacityTypeLabel: cmd.Candidates[i].NodeClaim.Labels[v1.CapacityTypeLabelKey],
+			metrics.ReasonLabel:            pretty.ToSnakeCase(string(cmd.Reason())),
+			metrics.ConsolidationTypeLabel: cmd.ConsolidationType(),
+			metrics.NodePoolLabel:          cmd.Candidates[i].NodeClaim.Labels[v1.NodePoolLabelKey],
+			metrics.CapacityTypeLabel:      cmd.Candidates[i].NodeClaim.Labels[v1.CapacityTypeLabelKey],
 		})
 	})
 	// If there were any deletion failures, we should requeue.

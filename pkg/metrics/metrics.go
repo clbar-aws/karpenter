@@ -63,10 +63,11 @@ var (
 			Namespace: Namespace,
 			Subsystem: NodeClaimSubsystem,
 			Name:      "disrupted_total",
-			Help:      "Number of nodeclaims disrupted in total by Karpenter. Labeled by reason the nodeclaim was disrupted and the owning nodepool.",
+			Help:      "Number of nodeclaims disrupted in total by Karpenter. Labeled by reason the nodeclaim was disrupted, consolidation type, the owning nodepool, and capacity type.",
 		},
 		[]string{
 			ReasonLabel,
+			ConsolidationTypeLabel,
 			NodePoolLabel,
 			CapacityTypeLabel,
 		},
