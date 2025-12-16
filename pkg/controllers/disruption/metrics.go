@@ -117,7 +117,7 @@ var (
 			Help:      "Alpha metric prone to change. Number of binary search iterations to find optimal multi-node consolidation batch.",
 			Buckets:   []float64{1, 2, 3, 4, 5, 6, 7},
 		},
-		[]string{},
+		[]string{"sim_success"},
 	)
 	MultiNodeConsolidationBatchSize = opmetrics.NewPrometheusHistogram(
 		crmetrics.Registry,
@@ -140,5 +140,16 @@ var (
 			Buckets:   metrics.DurationBuckets(),
 		},
 		[]string{"sim_success"},
+	)
+	MultiNodeConsolidationNumberCandidates = opmetrics.NewPrometheusHistogram(
+		crmetrics.Registry,
+		prometheus.HistogramOpts{
+			Namespace: metrics.Namespace,
+			Subsystem: voluntaryDisruptionSubsystem,
+			Name:      "multi_node_consolidation_candidates",
+			Help:      "Alpha metric prone to change. Number of candidates passed to multi-node consolidation after budget filtering.",
+			Buckets:   []float64{2, 5, 10, 20, 30, 50, 75, 100},
+		},
+		[]string{},
 	)
 )

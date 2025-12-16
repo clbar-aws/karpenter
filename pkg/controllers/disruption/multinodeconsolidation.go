@@ -85,7 +85,8 @@ func (m *MultiNodeConsolidation) ComputeCommands(ctx context.Context, disruption
 	// Only consider a maximum batch of 100 NodeClaims to save on computation.
 	// This could be further configurable in the future.
 	maxParallel := lo.Clamp(len(disruptableCandidates), 0, 100)
-
+	// Record batch length in metrics
+	MultiNodeConsolidationNumberCandidates.Observe(float64(len(disruptableCandidates)), map[string]string{})
 	cmd, err := m.firstNConsolidationOption(ctx, disruptableCandidates, maxParallel)
 	if err != nil {
 		return []Command{}, err
@@ -131,6 +132,7 @@ func (m *MultiNodeConsolidation) firstNConsolidationOption(ctx context.Context, 
 	// Set a timeout
 	timeoutCtx, cancel := context.WithTimeout(ctx, MultiNodeConsolidationTimeoutDuration)
 	defer cancel()
+	// beginning of binary search loop for finding maximum number of consolidatable nodes
 	for min <= max {
 		iterationCount++
 		iterationStart := m.clock.Now()
@@ -174,11 +176,13 @@ func (m *MultiNodeConsolidation) firstNConsolidationOption(ctx context.Context, 
 		}
 	}
 
-	// Record metrics
-	MultiNodeConsolidationIterations.Observe(float64(iterationCount), map[string]string{})
-
 	// Determine if binary search ultimately succeeded
 	simSuccess := lastSavedCommand.Decision() != NoOpDecision
+
+	// Record metrics
+	MultiNodeConsolidationIterations.Observe(float64(iterationCount), map[string]string{
+		"sim_success": strconv.FormatBool(simSuccess),
+	})
 
 	if failedIterationTime > 0 {
 		MultiNodeConsolidationFailedSimDuration.Observe(failedIterationTime.Seconds(), map[string]string{
