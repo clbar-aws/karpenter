@@ -147,9 +147,9 @@ var (
 			Namespace: metrics.Namespace,
 			Subsystem: voluntaryDisruptionSubsystem,
 			Name:      "multi_node_consolidation_candidates",
-			Help:      "Alpha metric prone to change. Number of candidates passed to multi-node consolidation after budget filtering.",
+			Help:      "Alpha metric prone to change. Number of candidates passed to multi-node consolidation after budget filtering. Labeled by whether the search ultimately succeeded.",
 			Buckets:   []float64{2, 5, 10, 20, 30, 50, 75, 100},
 		},
-		[]string{},
+		[]string{"sim_success"},
 	)
 )

@@ -85,12 +85,16 @@ func (m *MultiNodeConsolidation) ComputeCommands(ctx context.Context, disruption
 	// Only consider a maximum batch of 100 NodeClaims to save on computation.
 	// This could be further configurable in the future.
 	maxParallel := lo.Clamp(len(disruptableCandidates), 0, 100)
-	// Record batch length in metrics
-	MultiNodeConsolidationNumberCandidates.Observe(float64(len(disruptableCandidates)), map[string]string{})
 	cmd, err := m.firstNConsolidationOption(ctx, disruptableCandidates, maxParallel)
 	if err != nil {
 		return []Command{}, err
 	}
+
+	// Record candidate count with success indicator
+	simSuccess := cmd.Decision() != NoOpDecision
+	MultiNodeConsolidationNumberCandidates.Observe(float64(len(disruptableCandidates)), map[string]string{
+		"sim_success": strconv.FormatBool(simSuccess),
+	})
 
 	if cmd.Decision() == NoOpDecision {
 		// if there are no candidates because of a budget, don't mark
