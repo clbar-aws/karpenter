@@ -50,6 +50,19 @@ func NewMultiNodeConsolidation(c consolidation, opts ...option.Function[MethodOp
 }
 
 func (m *MultiNodeConsolidation) ComputeCommands(ctx context.Context, disruptionBudgetMapping map[string]int, candidates ...*Candidate) ([]Command, error) {
+	// Multi-node timing block logging
+	start := time.Now()
+	lenDisruptableCandidates := -1
+	numPods := 0
+	defer func() {
+		log.FromContext(ctx).Info(
+			"karpenter-timing: multinodeconsolidation complete",
+			"function", "disruption.multinodeconsolidation.ComputeCommand()",
+			"disruptable_candidates", lenDisruptableCandidates,
+			"duration_ms", float64(time.Since(start).Microseconds())/1000.0,
+			"len_pods", float64(numPods))
+	}()
+
 	if m.IsConsolidated() {
 		return []Command{}, nil
 	}
@@ -85,6 +98,13 @@ func (m *MultiNodeConsolidation) ComputeCommands(ctx context.Context, disruption
 	// Only consider a maximum batch of 100 NodeClaims to save on computation.
 	// This could be further configurable in the future.
 	maxParallel := lo.Clamp(len(disruptableCandidates), 0, 100)
+
+	// Number of pods?
+	lenDisruptableCandidates = len(disruptableCandidates)
+	for _, cand := range disruptableCandidates {
+		numPods += len(cand.PodRequests())
+	}
+
 	cmd, err := m.firstNConsolidationOption(ctx, disruptableCandidates, maxParallel)
 	if err != nil {
 		return []Command{}, err

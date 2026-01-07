@@ -1,0 +1,56 @@
+apiVersion: audit.k8s.io/v1
+kind: Policy
+omitStages:
+  - "RequestReceived"
+rules:
+  # Gather ConfigMaps for start/stop audit entries.
+  - level: RequestResponse
+    verbs: ["create"]
+    resources:
+      - group: ""
+        resources: ["configmaps"]
+
+  # Pods: lifecycle and scheduling
+  - level: RequestResponse
+    verbs: ["create", "update", "patch", "delete"]
+    resources:
+      - group: ""
+        resources: ["pods", "pods/status", "pods/binding"]
+
+  # Nodes: scheduling target + taints, conditions
+  - level: RequestResponse
+    verbs: ["create", "update", "patch", "delete"]
+    resources:
+      - group: ""
+        resources: ["nodes", "nodes/status"]
+
+  # Workload controllers: manage pod creation
+  - level: RequestResponse
+    verbs: ["create", "update", "patch", "delete"]
+    resources:
+      - group: "apps"
+        resources: ["deployments", "replicasets", "daemonsets", "statefulsets"]
+
+  # Karpenter CRDs (NodePool, NodeClass, NodeClaim, etc.)
+  - level: RequestResponse
+    verbs: ["create", "update", "patch", "delete"]
+    resources:
+      - group: "karpenter.sh"
+        resources: ["*"]
+      - group: "karpenter.k8s.aws"
+        resources: ["*"]
+
+  - level: RequestResponse
+    verbs: ["create", "update", "patch", "delete"]
+    resources:
+      - group: "karpenter.kwok.sh"
+        resources: ["*"]
+
+  # Catchall
+  - level: Metadata
+    verbs: ["create", "update", "patch", "delete"]
+    resources:
+      - group: ""
+        resources: ["*"]
+      - group: "apps"
+        resources: ["*"]

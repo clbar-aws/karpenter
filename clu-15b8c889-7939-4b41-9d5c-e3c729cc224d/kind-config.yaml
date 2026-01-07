@@ -1,0 +1,40 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+containerdConfigPatches:
+  - |
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options.logging.options]
+      max-file = "20"
+      max-size = "20m"
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: ./clu-15b8c889-7939-4b41-9d5c-e3c729cc224d/audit-policy.yaml
+        containerPath: /etc/kubernetes/audit-policy.yaml
+      - hostPath: /sys/fs/cgroup
+        containerPath: /sys/fs/cgroup
+        readOnly: false
+    kubeadmConfigPatches:
+      - |
+        kind: ClusterConfiguration
+        apiServer:
+          extraVolumes:
+            - name: audit-policy
+              hostPath: /etc/kubernetes/audit-policy.yaml
+              mountPath: /etc/kubernetes/audit-policy.yaml
+              readOnly: true
+              pathType: File
+            - name: audit-log
+              hostPath: /var/log/kubernetes
+              mountPath: /var/log/kubernetes
+              readOnly: false
+              pathType: DirectoryOrCreate
+          extraArgs:
+            audit-policy-file: /etc/kubernetes/audit-policy.yaml
+            audit-log-path: /var/log/kubernetes/audit.log
+            audit-log-maxage: "30"
+            audit-log-maxbackup: "0"
+            audit-log-maxsize: "100"
+      - |
+        kind: KubeletConfiguration
+        containerLogMaxFiles: 20
+        containerLogMaxSize: "20Mi"
